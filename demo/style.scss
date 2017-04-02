@@ -1,0 +1,40 @@
+require('./colors.js');
+
+.square {
+  width: 100px;
+  height: 100px;
+  display: inline-block;
+}
+
+.fancy-blue {
+  background-color: $fancy-blue;
+}
+
+.fancy-red {
+  background-color: $fancy-red;
+}
+
+.fancy-yellow {
+  background-color: $fancy-yellow;
+}
+
+.fancy-green {
+  background-color: $fancy-green;
+}
+
+.fancy-white {
+  background-color: $fancy-white;
+}
+
+.fancy-black {
+  background-color: $fancy-black;
+}
+
+.fancy-lilac {
+  background-color: $fancy-lilac;
+}
+
+.fancy-pink {
+  background-color: $fancy-pink;
+}
+
