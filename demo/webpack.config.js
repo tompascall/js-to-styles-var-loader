@@ -20,7 +20,7 @@ module.exports = {
                     loader: "sass-loader"
                 },
                 {
-                    loader: "js-to-sass-var-loader"
+                    loader: "../index.js"
                 }]
             }
         ]

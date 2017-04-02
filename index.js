@@ -49,15 +49,54 @@ const operator = {
         }, '');
     },
 
-    mergeVarsToContent (content, webpackContext) {
-        const [ moduleData, sassContent ] = this.divideContent(content);
+    transformToLessVars (varData) {
+        const keys = Object.keys(varData);
+        return keys.reduce( (result, key) => {
+            result += `@${key}: ${varData[key]};\n`;
+            return result;
+        }, '');
+    },
+
+    transformToStyleVars ({ type, varData } = {}) {
+        switch (type) {
+            case 'sass':
+                return this.transformToSassVars(varData);
+            case 'less':
+                return this.transformToLessVars(varData);
+
+        }
+    },
+
+    mergeVarsToContent (content, webpackContext, preprocessorType) {
+        const [ moduleData, styleContent ] = this.divideContent(content);
         if (moduleData) {
             const modulePath = this.getModulePath(moduleData);
             const varData = this.getVarData(modulePath, webpackContext);
-            const sassVars = this.transformToSassVars(varData);
-            return sassVars + sassContent;
+            const vars = this.transformToStyleVars({ type: preprocessorType, varData });
+            return vars + styleContent;
         }
         else return content;
+    },
+
+    getResource (context) {
+        return context._module.resource;
+    },
+
+    getPreprocessorType ( { resource } ={}) {
+        const preProcs = [
+            {
+                type: 'sass',
+                reg: /\.scss$/
+            },
+            {
+                type: 'less',
+                reg: /\.less$/
+            }
+        ];
+
+        const result = preProcs.find( item => item.reg.test(resource));
+        if (result) return result.type;
+        throw Error(`Unknown preprocesor type for ${resource}`);
     }
 };
 
@@ -65,7 +104,9 @@ exports.operator = operator;
 
 const loader = function (content) {
     const webpackContext = this;
-    const merged = operator.mergeVarsToContent(content, webpackContext);
+    const resource = operator.getResource(webpackContext);
+    const preprocessorType = operator.getPreprocessorType({ resource });
+    const merged = operator.mergeVarsToContent(content, webpackContext, preprocessorType);
     return merged;
 };
 
