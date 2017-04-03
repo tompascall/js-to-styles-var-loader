@@ -5,7 +5,6 @@ module.exports = {
     entry: './index.js',
     output: {
       filename: 'bundle.js',
-        //path: path.resolve(__dirname)
     },
     module: {
         rules: [
@@ -18,6 +17,19 @@ module.exports = {
                     loader: "css-loader"
                 }, {
                     loader: "sass-loader"
+                },
+                {
+                    loader: "../index.js"
+                }]
+            },
+            {
+                test: /\.less$/,
+                use: [{
+                    loader: "style-loader"
+                }, {
+                    loader: "css-loader"
+                }, {
+                    loader: "less-loader"
                 },
                 {
                     loader: "../index.js"

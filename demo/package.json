@@ -17,6 +17,8 @@
     "babel-preset-env": "^1.3.2",
     "css-loader": "^0.28.0",
     "js-to-sass-var-loader": "^1.0.0",
+    "less": "^2.7.2",
+    "less-loader": "^4.0.3",
     "node-sass": "^4.5.2",
     "sass-loader": "^6.0.3",
     "style-loader": "^0.16.1",

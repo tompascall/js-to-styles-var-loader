@@ -1,4 +1,5 @@
 import './style.scss';
+import './style.less';
 import colors from './colors';
 
 const select = document.querySelector('select');
