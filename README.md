@@ -2,7 +2,7 @@
 
 ## js-to-styles-var-loader
 
-### A [Webpack]() loader to share variable data between javascript modules and sass or less files
+### A [Webpack](https://webpack.github.io/) loader to share variable data between javascript modules and sass or less files
 
 This loader is for that special case when you would like to import data from a javascript module into a sass /less file. The [sass](https://github.com/webpack-contrib/sass-loader) / [less](http://lesscss.org/) loader complains, because importing js module is not a valid instruction.
 
