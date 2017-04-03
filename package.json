@@ -1,6 +1,6 @@
 {
   "name": "js-to-styles-var-loader",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Webpack loader for sharing data amongst (sass || less) && javascript modules",
   "main": "index.js",
   "scripts": {
