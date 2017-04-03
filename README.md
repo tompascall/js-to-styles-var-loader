@@ -2,27 +2,27 @@
 
 ## js-to-styles-var-loader
 
-### A [Webpack]() loader to share data for sass variables between javascript modules and sass files
+### A [Webpack]() loader to share variable data between javascript modules and sass or less files
 
-This loader is for that special case when you would like to import data from a javascript module into a sass file. The [sass loader](https://github.com/webpack-contrib/sass-loader) complains, because importing js module is not a valid sass instruction.
+This loader is for that special case when you would like to import data from a javascript module into a sass /less file. The [sass](https://github.com/webpack-contrib/sass-loader) / [less](http://lesscss.org/) loader complains, because importing js module is not a valid instruction.
 
-##### The loader only handles the case when you want to inject sass variables into a sass file via a javascript module.
+##### The loader only handles the case when you want to inject variable data into a sass / less file via a javascript module.
 
 #### Prerequisites
 
 - Nodejs >= 4.0
-- [sass](http://sass-lang.com/) for css pre-processing
-- Webpack for module bundle
+- Webpack for module bundling
 
 
 #### Setting up Webpack config
 
-Probably you use [sass-loader](https://github.com/webpack-contrib/sass-loader) with Webpack. The usage in this case is pretty simple: just put this loader before sass-loader in your webpack config:
+Probably you use [sass-loader](https://github.com/webpack-contrib/sass-loader) or [less-loader](https://github.com/webpack-contrib/less-loader) with Webpack. The usage in this case is pretty simple: just put the js-to-styles-var-loader before the sass-loader / less-loader in your webpack config:
 
+For sass-loader:  
 ```js
 {
   rules: [
-    test: /\.sass$/,
+    test: /\.scss$/,
     use: [
       {
         loader: "style-loader"
@@ -34,13 +34,36 @@ Probably you use [sass-loader](https://github.com/webpack-contrib/sass-loader) w
         loader: "sass-loader"
       },
       {
-        loader: "js-to-sass-var-loader"
+        loader: "js-to-styles-var-loader"
       }
     ]
   ]
 }
 ```
 
+For less-loader:  
+
+```js
+{
+  rules: [
+    test: /\.less$/,
+    use: [
+      {
+        loader: "style-loader"
+      },
+      {
+        loader: "css-loader"
+      },
+      {
+        loader: "less-loader"
+      },
+      {
+        loader: "js-to-styles-var-loader"
+      }
+    ]
+  ]
+}
+```
 #### Usage
 
 Let's assume we would like to store some variable data in a module like this:
@@ -67,11 +90,22 @@ require('relative/path/to/colors.js');
 // ...
 ```
 
-**The form of the required data is important**: it must be an object with key/values pair, the key will be the name of the sass variable.
+**The form of the required data is important**: it must be an object with key/values pair, the key will be the name of the variable.
+
+The js-to-styles-var-loader transforms this sass file and provides it in the following form for the sass-loader:  
+
+```js
+$fancy-white: #FFFFFE;
+$fancy-black: #000001;
+
+.some-class {
+  background-color: $fancy-white
+}
+```
 
 #### Misc
 
-You can use other require form (`require('relative/path/to/module').someProperty`), too.  
+You can use other require forms (`require('relative/path/to/module').someProperty`), too.  
 
 #### Demo
 
@@ -81,7 +115,7 @@ cd demo
 npm i
 npm run demo
 ```
-The webpack dev server serves the app on `localhost:8030`. In the app we share data between js and sass modules.
+The webpack dev server serves the app on `localhost:8030`. In the app we share data between js, less and sass modules.
 
 #### Development
 
