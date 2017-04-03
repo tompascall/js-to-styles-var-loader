@@ -63,6 +63,8 @@ const operator = {
                 return this.transformToSassVars(varData);
             case 'less':
                 return this.transformToLessVars(varData);
+            default:
+                throw Error(`Unknown preprocessor type: ${type}`);
 
         }
     },

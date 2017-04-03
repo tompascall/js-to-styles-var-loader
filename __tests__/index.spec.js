@@ -126,9 +126,9 @@ describe('js-to-styles-vars-loader', () => {
             const [ moduleData, stylesContent ] = operator.divideContent(content);
             const modulePath = operator.getModulePath(moduleData);
             const varData = operator.getVarData(modulePath, context);
-            const vars = operator.transformToStyleVars(varData);
+            const vars = operator.transformToStyleVars({ type: 'less', varData });
 
-            expect(operator.mergeVarsToContent(content, context)).toEqual(vars + stylesContent);
+            expect(operator.mergeVarsToContent(content, context, 'less')).toEqual(vars + stylesContent);
         });
 
         it('gives back content as is if there is no requre', () => {
@@ -175,6 +175,14 @@ describe('js-to-styles-vars-loader', () => {
 
             operator.transformToStyleVars({ type: 'less', varData: {} });
             expect(operator.transformToLessVars).toHaveBeenCalled();
+        });
+
+        it('throws error is type is unknown', () => {
+            const caller = () => {
+                operator.transformToStyleVars({ type: 'unknown' });
+            };
+
+            expect(caller).toThrow();
         });
     });
 });
