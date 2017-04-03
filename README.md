@@ -1,6 +1,6 @@
-![Build Status](https://travis-ci.org/tompascall/js-to-sass-var-loader.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/tompascall/js-to-sass-var-loader/badge.svg?branch=master)](https://coveralls.io/github/tompascall/js-to-sass-var-loader?branch=master)
+![Build Status](https://travis-ci.org/tompascall/js-to-styles-var-loader.svg?branch=master) [![Coverage Status](https://coveralls.io/repos/github/tompascall/js-to-styles-var-loader/badge.svg?branch=master)](https://coveralls.io/github/tompascall/js-to-styles-var-loader?branch=master)
 
-## js-to-sass-var-loader
+## js-to-styles-var-loader
 
 ### A [Webpack]() loader to share data for sass variables between javascript modules and sass files
 
