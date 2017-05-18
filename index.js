@@ -39,7 +39,7 @@ const operator = {
             const modulePath = path.join(webpackContext.context, currentPath.path);
             delete require.cache[require.resolve(modulePath)];
             const moduleData = (currentPath.methodName)? require(modulePath)[currentPath.methodName] : require(modulePath);
-            webpackContext.addDependency(modulePath)
+            webpackContext.addDependency(modulePath);
             return Object.assign(accumulator, moduleData);
         }, {});
     },
