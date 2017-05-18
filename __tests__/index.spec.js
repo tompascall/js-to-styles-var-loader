@@ -9,7 +9,8 @@ describe('js-to-styles-vars-loader', () => {
             context: path.resolve(),
             _module: {
                 resource: 'fakeResource.scss'
-            }
+            },
+            addDependency () {}
         };
 
         it('exports a function', () => {
@@ -83,7 +84,10 @@ describe('js-to-styles-vars-loader', () => {
     });
 
     describe('getVarData', () => {
-        const context = { context: path.resolve()};
+        const context = {
+            context: path.resolve(),
+            addDependency () {}
+        };
 
         it('gets variable data by modulePath with context', () => {
             const varData = operator.getVarData([{path: './mocks/colors.js' }], context);
@@ -98,6 +102,13 @@ describe('js-to-styles-vars-loader', () => {
         it('handles methodName if it is given', () => {
             const varData = operator.getVarData([{ path:'./mocks/corners.js', methodName: 'typeOne'}], context);
             expect(varData).toEqual({ tiny: '1%', medium: '3%'});
+        });
+
+        it('call context.addDependecy with modulePath', () => {
+            spyOn(context, 'addDependency');
+            const relativePath = './mocks/corners.js';
+            operator.getVarData([{ path: relativePath, methodName: 'typeOne'}], context);
+            expect(context.addDependency).toHaveBeenCalledWith(path.resolve(relativePath));
         });
     });
 
@@ -117,7 +128,8 @@ describe('js-to-styles-vars-loader', () => {
 
     describe('mergeVarsToContent', () => {
         const context = {
-            context: path.resolve()
+            context: path.resolve(),
+            addDependency () {}
         };
 
         it('inserts vars to styles content', () => {
@@ -141,7 +153,8 @@ describe('js-to-styles-vars-loader', () => {
         it('gets module.resource', () => {
         const context = {
             _module: {
-                resource: 'fakeResource'
+                resource: 'fakeResource',
+                addDependency () {}
             }
         };
 
