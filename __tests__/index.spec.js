@@ -1,5 +1,6 @@
 import path from 'path';
 const loader = require('../index').default;
+jest.mock('decache');
 const { operator } = require('../index');
 
 describe('js-to-styles-vars-loader', () => {

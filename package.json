@@ -31,5 +31,8 @@
     "babel-preset-es2015": "^6.24.0",
     "coveralls": "^2.12.0",
     "jest": "^19.0.2"
+  },
+  "dependencies": {
+    "decache": "^4.1.0"
   }
 }
