@@ -1,4 +1,5 @@
 const path = require('path');
+const decache = require('decache');
 
 const requireReg = /require\s*\(['|"](.+)['|"]\)(?:\.([^;\s]+))?[;\s]/g;
 
@@ -37,7 +38,7 @@ const operator = {
     getVarData (modulePath, webpackContext) {
         return modulePath.reduce( (accumulator, currentPath) => {
             const modulePath = path.join(webpackContext.context, currentPath.path);
-            delete require.cache[require.resolve(modulePath)];
+            decache(modulePath);
             const moduleData = (currentPath.methodName)? require(modulePath)[currentPath.methodName] : require(modulePath);
             webpackContext.addDependency(modulePath);
             return Object.assign(accumulator, moduleData);
