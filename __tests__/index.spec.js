@@ -38,6 +38,13 @@ describe('js-to-styles-vars-loader', () => {
 
         });
 
+        it('handles .sass extension for sass files', () => {
+            const sassContext = { ...context, _module: { resource: 'fakeResource.sass' } };
+            spyOn(operator, 'mergeVarsToContent');
+            loader.call(sassContext, 'sdfg');
+            expect(operator.mergeVarsToContent).toHaveBeenCalledWith('sdfg', sassContext, 'sass');
+        });
+
         it('returns the result of mergeVarsToContent', () => {
             const content = 'require("./mocks/colors.js")\n' + '.someClass {\ncolor: $nice;\n}';
             const merged = operator.mergeVarsToContent(content, context, 'sass');
