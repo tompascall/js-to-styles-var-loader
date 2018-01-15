@@ -207,6 +207,7 @@ describe('js-to-styles-vars-loader', () => {
     describe('getPreprocessorType', () => {
         it('should recognise sass resource', () => {
             expect(operator.getPreprocessorType({ resource: '/path/to/resource.scss'})).toEqual('sass');
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.sass'})).toEqual('sass');
         });
 
         it('should recognise less resource', () => {
