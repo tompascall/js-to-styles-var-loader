@@ -13,8 +13,8 @@ const operator = {
     },
 
     getVarData (relativePath, property) {
-        const data = require(relativePath);
         decache(relativePath);
+        const data = require(relativePath);
         if (!data) {
             throw new Error(`No data in '${relativePath}'`)
         }
