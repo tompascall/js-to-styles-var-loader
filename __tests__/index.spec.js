@@ -107,7 +107,7 @@ describe('js-to-styles-vars-loader', () => {
             operator.mergeVarsToContent(content, context, 'less')
 
             expect(trimmer(operator.mergeVarsToContent(content, context, 'less'))).toEqual(trimmer(`
-              @white: #fff; @black: #000; ; .someClass { color: #fff;}
+              @white: #fff; @black: #000; .someClass { color: #fff;}
             `));
         });
 
