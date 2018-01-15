@@ -17,8 +17,8 @@ const operator = {
         decache(relativePath);
         if (!data) {
             throw new Error(`No data in '${relativePath}'`)
-            this.guardExportType(data, relativePath);
         }
+        this.guardExportType(data, relativePath);
         if (property) {
             const propVal = squba(data, property);
             this.guardExportType(propVal, relativePath);
