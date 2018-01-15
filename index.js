@@ -6,17 +6,22 @@ const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*);?/igm;
 
 const operator = {
 
+    guardExportType (data, relativePath) {
+        if (typeof data !== "object" || Array.isArray(data)) {
+            throw new Error(`Value must be an object '${relativePath}'`)
+        }
+    },
+
     getVarData (relativePath, property) {
         const data = require(relativePath);
         decache(relativePath);
         if (!data) {
             throw new Error(`No data in '${relativePath}'`)
+            this.guardExportType(data, relativePath);
         }
         if (property) {
             const propVal = squba(data, property);
-            if (!propVal) {
-                throw new Error(`Empty property: 'require("${relativePath}")${property}`);
-            }
+            this.guardExportType(propVal, relativePath);
             return propVal;
         }
         return data;

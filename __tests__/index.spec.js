@@ -23,7 +23,6 @@ describe('js-to-styles-vars-loader', () => {
             spyOn(operator, 'getResource').and.callThrough();
             loader.call(context, 'asdf');
             expect(operator.getResource).toHaveBeenCalledWith(context);
-
         });
 
         it('calls getPreprocessorType with resource', () => {
@@ -54,7 +53,23 @@ describe('js-to-styles-vars-loader', () => {
         });
     });
 
+    describe('guardExportType', () => {
+      it ("throws on anything except an object, does not throw otherwise", () => {
+        const areOk = [{}, {a: "foo"}];
+        const areNotOk = [[], ["a"], "", "123", 123, false, true];
+        expect(() => {
+            for (const okThing of areOk) {
+                operator.guardExportType(okThing, "");
+            }
+        }).not.toThrow();
+        for (const okThing of areNotOk) {
+            expect(() => {
+                operator.guardExportType(okThing, "");
+            }).toThrow();
+        }
 
+      })
+    });
 
     describe('getVarData', () => {
         const context = {
@@ -75,6 +90,51 @@ describe('js-to-styles-vars-loader', () => {
             const varData = operator.getVarData(path.join(context.context, './mocks/corners.js'), 'deep.nested');
             expect(varData).toEqual({ color: '#f00'});
         });
+
+        it('throws on an missing module', () => {
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/this_is_not_an_existing_file.js'));
+            }).toThrow();
+        })
+        it('throws on a non-object export', () => {
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/null_export.js'));
+            }).toThrow();
+        })
+
+
+
+        it('throws on an empty property', () => {
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'empty');
+            }).toThrow();
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'notEmptyObject');
+            }).not.toThrow();
+        })
+
+        it('does not throw on an empty object', () => {
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'emptyObject');
+            }).not.toThrow();
+        })
+
+        it('throws on a non-object property', () => {
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'falsey');
+            }).toThrow();
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'truthy');
+            }).toThrow();
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'emptyArray');
+            }).toThrow();
+            expect(() => {
+                operator.getVarData(path.join(context.context, './mocks/bad_exports.js'), 'nonEmptyArray');
+            }).toThrow();
+
+        })
+
     });
 
     describe('transformToSassVars', () => {
