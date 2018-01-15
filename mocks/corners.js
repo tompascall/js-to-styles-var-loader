@@ -7,3 +7,9 @@ exports.typeTwo = {
     tiny: '2%',
     medium: '5%'
 };
+
+exports.deep = {
+  nested: {
+    color: "#f00"
+  }
+}

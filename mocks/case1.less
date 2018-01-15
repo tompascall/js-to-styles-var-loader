@@ -1,0 +1,16 @@
+
+require("./case1_a.js")
+
+.classA {
+  color: @some_color;
+}
+
+.classB {
+  require("./case1_b.js")
+  color: @some_color;
+}
+
+.classC {
+  require("./case1_c.js")
+  color: @some_other_color;
+}

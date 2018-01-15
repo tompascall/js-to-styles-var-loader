@@ -1,48 +1,25 @@
 const path = require('path');
 const decache = require('decache');
+const squba = require('squba')
 
-const requireReg = /require\s*\(['|"](.+)['|"]\)(?:\.([^;\s]+))?[;\s]/g;
+const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*)/igm;
 
 const operator = {
-    divideContent (content) {
-        let match;
-        let lastIndex;
-        const reg = new RegExp(requireReg);
-        while (match = reg.exec(content)) {
-            lastIndex = reg.lastIndex;
-        }
-        if (typeof lastIndex !== 'undefined') {
-            return [
-                content.slice(0, lastIndex),
-                content.slice(lastIndex)
-            ];
-        }
-        else {
-            return ['', content];
-        }
-    },
 
-    getModulePath (modulePart) {
-        const reg = new RegExp(requireReg);
-        const modulePaths = [];
-        let match;
-        while (match = reg.exec(modulePart)) {
-            modulePaths.push({
-                path: match[1],
-                methodName: match[2]
-            });
+    getVarData (relativePath, property) {
+        const data = require(relativePath);
+        decache(relativePath);
+        if (!data) {
+            throw new Error(`No data in '${relativePath}'`)
         }
-        return modulePaths;
-    },
-
-    getVarData (modulePath, webpackContext) {
-        return modulePath.reduce( (accumulator, currentPath) => {
-            const modulePath = path.join(webpackContext.context, currentPath.path);
-            decache(modulePath);
-            const moduleData = (currentPath.methodName)? require(modulePath)[currentPath.methodName] : require(modulePath);
-            webpackContext.addDependency(modulePath);
-            return Object.assign(accumulator, moduleData);
-        }, {});
+        if (property) {
+            const propVal = squba(data, property);
+            if (!propVal) {
+                throw new Error(`Empty property: 'require("${relativePath}")${property}`);
+            }
+            return propVal;
+        }
+        return data;
     },
 
     transformToSassVars (varData) {
@@ -74,14 +51,19 @@ const operator = {
     },
 
     mergeVarsToContent (content, webpackContext, preprocessorType) {
-        const [ moduleData, styleContent ] = this.divideContent(content);
-        if (moduleData) {
-            const modulePath = this.getModulePath(moduleData);
-            const varData = this.getVarData(modulePath, webpackContext);
-            const vars = this.transformToStyleVars({ type: preprocessorType, varData });
-            return vars + styleContent;
+        const replacer = function (m,q, relativePath, property) {
+            const modulePath = path.join(webpackContext.context, relativePath)
+            const varData = this.getVarData(modulePath, property);
+            webpackContext.addDependency(modulePath);
+            return this.transformToStyleVars({
+                type: preprocessorType,
+                varData
+            });
         }
-        else return content;
+        return content.replace(
+            requireReg,
+            replacer.bind(this)
+        );
     },
 
     getResource (context) {

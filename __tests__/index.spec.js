@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 const loader = require('../index').default;
 jest.mock('decache');
 const { operator } = require('../index');
@@ -53,43 +54,7 @@ describe('js-to-styles-vars-loader', () => {
         });
     });
 
-    describe('divideContent', () => {
-        it('divides the require (if it exists) from the content', () => {
-            const content = "require('colors.js');\n" +
-                ".someClass { color: #fff;}";
-            expect(operator.divideContent(content)[0]).toEqual("require('colors.js');");
-            expect(operator.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
-        });
 
-        it('gives back content if there is no require in content', () => {
-            const content = ".someClass { color: #fff;}";
-            expect(operator.divideContent(content)[0]).toEqual("");
-            expect(operator.divideContent(content)[1]).toEqual(content);
-        });
-
-        it('handles more requires when divide', () => {
-            const content = "require('colors.js');\n" +
-                "require('sizes.js');\n" +
-                ".someClass { color: #fff;}";
-            expect(operator.divideContent(content)[0]).toEqual("require('colors.js');\n" + "require('sizes.js');");
-            expect(operator.divideContent(content)[1]).toEqual("\n.someClass { color: #fff;}");
-        });
-
-        it('handles the form of request("asdf").someProp', () => {
-            const content = "require('corners.js').typeOne;\n" + ".someClass { color: #fff;}";
-            expect(operator.divideContent(content)[0]).toEqual("require('corners.js').typeOne;");
-        });
-    });
-
-    describe('getModulePath', () => {
-        it('extracts module paths and methodName into an array', () => {
-            expect(operator.getModulePath('require("./mocks/colors.js");\n')).toEqual([{path: "./mocks/colors.js"}]);
-
-            expect(operator.getModulePath('require("./mocks/colors.js");\n' + 'require("./mocks/sizes.js");')).toEqual([{path: "./mocks/colors.js"}, {path:"./mocks/sizes.js"}]);
-
-            expect(operator.getModulePath('require("./mocks/corners.js").typeTwo;\n')).toEqual([{path: "./mocks/corners.js", methodName: 'typeTwo'}]);
-        });
-    });
 
     describe('getVarData', () => {
         const context = {
@@ -98,25 +63,17 @@ describe('js-to-styles-vars-loader', () => {
         };
 
         it('gets variable data by modulePath with context', () => {
-            const varData = operator.getVarData([{path: './mocks/colors.js' }], context);
+            const varData = operator.getVarData(path.join(context.context, './mocks/colors.js'));
             expect(varData).toEqual({ white: '#fff', black: '#000'});
         });
 
-        it('merges module data if there are more requests', () => {
-            const varData = operator.getVarData([{path:'./mocks/colors.js'}, {path:'./mocks/sizes.js'}], context);
-            expect(varData).toEqual({ white: '#fff', black: '#000', small: '10px', large: '50px'});
-        });
-
-        it('handles methodName if it is given', () => {
-            const varData = operator.getVarData([{ path:'./mocks/corners.js', methodName: 'typeOne'}], context);
+        it('uses value from property', () => {
+            const varData = operator.getVarData(path.join(context.context, './mocks/corners.js'), 'typeOne');
             expect(varData).toEqual({ tiny: '1%', medium: '3%'});
         });
-
-        it('call context.addDependecy with modulePath', () => {
-            spyOn(context, 'addDependency');
-            const relativePath = './mocks/corners.js';
-            operator.getVarData([{ path: relativePath, methodName: 'typeOne'}], context);
-            expect(context.addDependency).toHaveBeenCalledWith(path.resolve(relativePath));
+        it('uses value from nested property', () => {
+            const varData = operator.getVarData(path.join(context.context, './mocks/corners.js'), 'deep.nested');
+            expect(varData).toEqual({ color: '#f00'});
         });
     });
 
@@ -139,22 +96,39 @@ describe('js-to-styles-vars-loader', () => {
             context: path.resolve(),
             addDependency () {}
         };
+        const content = "require('./mocks/colors.js');\n" +
+            ".someClass { color: #fff;}";
+
+        const trimmer = (str) => {
+          return (str.split("\n").filter(a => a).map(s => s.trim()).join(" ")).trim()
+        };
 
         it('inserts vars to styles content', () => {
-            const content = "require('./mocks/colors.js');\n" +
-                ".someClass { color: #fff;}";
-            const [ moduleData, stylesContent ] = operator.divideContent(content);
-            const modulePath = operator.getModulePath(moduleData);
-            const varData = operator.getVarData(modulePath, context);
-            const vars = operator.transformToStyleVars({ type: 'less', varData });
+            operator.mergeVarsToContent(content, context, 'less')
 
-            expect(operator.mergeVarsToContent(content, context, 'less')).toEqual(vars + stylesContent);
+            expect(trimmer(operator.mergeVarsToContent(content, context, 'less'))).toEqual(trimmer(`
+              @white: #fff; @black: #000; ; .someClass { color: #fff;}
+            `));
+        });
+
+        it('call context.addDependecy', () => {
+            spyOn(context, 'addDependency');
+            const dependencyPath = path.join(context.context, './mocks/colors.js');
+            operator.mergeVarsToContent(content, context, 'less')
+            expect(context.addDependency).toHaveBeenCalledWith(path.resolve(dependencyPath));
         });
 
         it('gives back content as is if there is no requre', () => {
             const content = ".someClass { color: #fff;}";
             expect(operator.mergeVarsToContent(content, context)).toEqual(content);
         });
+
+        it("inserts variables inside style blocks and does not fail if the last 'require' is inside a block", () => {
+          const content = fs.readFileSync(path.resolve('./mocks/case1.less'), 'utf8');
+          const expectedContent = fs.readFileSync(path.resolve('./mocks/case1_expected.less'), 'utf8');
+          const merged = operator.mergeVarsToContent(content, {...context, context: path.resolve('./mocks/')}, 'less');
+          expect(merged.trim()).toEqual(expectedContent.trim());
+        })
     });
 
     describe('getResource', () => {

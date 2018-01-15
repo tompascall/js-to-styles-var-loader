@@ -34,6 +34,7 @@
     "jest": "^19.0.2"
   },
   "dependencies": {
-    "decache": "^4.1.0"
+    "decache": "^4.1.0",
+    "squba": "^0.1.4"
   }
 }
