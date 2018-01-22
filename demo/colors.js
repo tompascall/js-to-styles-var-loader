@@ -6,5 +6,6 @@ module.exports = {
     'fancy-white': '#fcfff7',
     'fancy-black': '#1f2120',
     'fancy-pink': '#d326c8',
-    'fancy-lilac': '#941ece'
+    'fancy-lilac': '#941ece',
+    'fancy-orange': '#ff6633'
 };
