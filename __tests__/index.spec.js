@@ -56,16 +56,18 @@ describe('js-to-styles-vars-loader', () => {
     describe('guardExportType', () => {
       it ("throws on anything except an object, does not throw otherwise", () => {
         const areOk = [{}, {a: "foo"}];
-        const areNotOk = [[], ["a"], "", "123", 123, false, true];
+        const areNotOk = [[], ["a"], "", "123", 123, false, true, null, undefined, NaN];
         expect(() => {
             for (const okThing of areOk) {
                 operator.guardExportType(okThing, "");
             }
         }).not.toThrow();
-        for (const okThing of areNotOk) {
+        for (const notOkThing of areNotOk) {
+
             expect(() => {
-                operator.guardExportType(okThing, "");
-            }).toThrow();
+                operator.guardExportType(notOkThing, "");
+            },).toThrow();
+
         }
 
       })
