@@ -1,48 +1,53 @@
 const path = require('path');
 const decache = require('decache');
+const squba = require('squba')
 
-const requireReg = /require\s*\(['|"](.+)['|"]\)(?:\.([^;\s]+))?[;\s]/g;
+const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*);?/igm;
 
 const operator = {
-    divideContent (content) {
-        let match;
-        let lastIndex;
-        const reg = new RegExp(requireReg);
-        while (match = reg.exec(content)) {
-            lastIndex = reg.lastIndex;
-        }
-        if (typeof lastIndex !== 'undefined') {
-            return [
-                content.slice(0, lastIndex),
-                content.slice(lastIndex)
-            ];
-        }
-        else {
-            return ['', content];
+
+    validateExportType (data, relativePath) {
+        if (Object.prototype.toString.call(data) !== '[object Object]') {
+            throw new Error(`Export must be an object '${relativePath}'`);
         }
     },
 
-    getModulePath (modulePart) {
-        const reg = new RegExp(requireReg);
-        const modulePaths = [];
-        let match;
-        while (match = reg.exec(modulePart)) {
-            modulePaths.push({
-                path: match[1],
-                methodName: match[2]
-            });
+    // Ensure it is a flat object with finite number/string values.
+    validateVariablesValue(value, property, relativePath) {
+        if (Object.prototype.toString.call(value) !== '[object Object]') {
+            throw new Error(`Only an object can be converted to style vars (${relativePath}${property})`);
         }
-        return modulePaths;
+
+        const keys = Object.keys(value);
+        for (const k of keys) {
+            if (!(
+                // Define ok types of value (can be output as a style var)
+                typeof value[k] === "string"
+                || (typeof value[k] === "number" && Number.isFinite(value[k]))
+            )) {
+                throw new Error(
+                    `Style vars must have a value of type "string" or "number". Only flat objects are supported. ` +
+                    `In: ${relativePath}${property ? ":" : ""}${property}`);
+            }
+        }
+
+        return true;
     },
 
-    getVarData (modulePath, webpackContext) {
-        return modulePath.reduce( (accumulator, currentPath) => {
-            const modulePath = path.join(webpackContext.context, currentPath.path);
-            decache(modulePath);
-            const moduleData = (currentPath.methodName)? require(modulePath)[currentPath.methodName] : require(modulePath);
-            webpackContext.addDependency(modulePath);
-            return Object.assign(accumulator, moduleData);
-        }, {});
+    getVarData (relativePath, property) {
+        decache(relativePath);
+        const data = require(relativePath);
+        if (!data) {
+            throw new Error(`No data in '${relativePath}'`);
+        }
+        this.validateExportType(data, relativePath);
+        if (property) {
+            const propVal = squba(data, property);
+            this.validateExportType(propVal, relativePath);
+            this.validateVariablesValue(propVal, property, relativePath)
+            return propVal;
+        }
+        return data;
     },
 
     transformToSassVars (varData) {
@@ -73,15 +78,27 @@ const operator = {
         }
     },
 
+    propDeDot (strPropMatch) {
+        if (!strPropMatch || strPropMatch[0] !== ".")
+            return strPropMatch;
+        else
+            return strPropMatch.substr(1);
+    },
+
     mergeVarsToContent (content, webpackContext, preprocessorType) {
-        const [ moduleData, styleContent ] = this.divideContent(content);
-        if (moduleData) {
-            const modulePath = this.getModulePath(moduleData);
-            const varData = this.getVarData(modulePath, webpackContext);
-            const vars = this.transformToStyleVars({ type: preprocessorType, varData });
-            return vars + styleContent;
+        const replacer = function (m,q, relativePath, property) {
+            const modulePath = path.join(webpackContext.context, relativePath)
+            const varData = this.getVarData(modulePath, this.propDeDot(property));
+            webpackContext.addDependency(modulePath);
+            return this.transformToStyleVars({
+                type: preprocessorType,
+                varData
+            });
         }
-        else return content;
+        return content.replace(
+            requireReg,
+            replacer.bind(this)
+        );
     },
 
     getResource (context) {

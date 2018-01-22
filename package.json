@@ -1,6 +1,6 @@
 {
   "name": "js-to-styles-var-loader",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Webpack loader for sharing data amongst (sass || less) && javascript modules",
   "main": "index.js",
   "scripts": {
@@ -34,6 +34,7 @@
     "jest": "^19.0.2"
   },
   "dependencies": {
-    "decache": "^4.1.0"
+    "decache": "^4.1.0",
+    "squba": "^0.1.4"
   }
 }

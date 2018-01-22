@@ -1,0 +1,18 @@
+@some_color: #ff0;
+
+
+.classA {
+  color: @some_color;
+}
+
+.classB {
+  @some_color: #00f;
+
+  color: @some_color;
+}
+
+.classC {
+  @some_other_color: #f0f;
+
+  color: @some_other_color;
+}
