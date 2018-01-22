@@ -105,7 +105,8 @@ describe('js-to-styles-vars-loader', () => {
         }).not.toThrow();
         for (const notOkThing of areNotOk) {
             expect(() => {
-                operator.validateVariablesValue(notOkThing, "", "");
+                operator.validateVariablesValue(notOkThing, "", "nofile.js");
+                operator.validateVariablesValue(notOkThing, "some.thing", "nofile.js");
                 console.error(`Should have thrown on ${typeof notOkThing} '${JSON.stringify(notOkThing)}'`);
             },).toThrow();
 
