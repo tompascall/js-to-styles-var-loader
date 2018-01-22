@@ -53,19 +53,19 @@ describe('js-to-styles-vars-loader', () => {
         });
     });
 
-    describe('guardExportType', () => {
+    describe('validateExportType', () => {
       it ("throws on anything except an object, does not throw otherwise", () => {
         const areOk = [{}, {a: "foo"}];
         const areNotOk = [[], ["a"], "", "123", 123, false, true, null, undefined, NaN];
         expect(() => {
             for (const okThing of areOk) {
-                operator.guardExportType(okThing, "");
+                operator.validateExportType(okThing, "");
             }
         }).not.toThrow();
         for (const notOkThing of areNotOk) {
-
             expect(() => {
-                operator.guardExportType(notOkThing, "");
+                operator.validateExportType(notOkThing, "");
+                console.error(`Should have thrown on ${typeof notOkThing} '${notOkThing}'`);
             },).toThrow();
 
         }
@@ -180,7 +180,7 @@ describe('js-to-styles-vars-loader', () => {
             expect(context.addDependency).toHaveBeenCalledWith(path.resolve(dependencyPath));
         });
 
-        it('gives back content as is if there is no requre', () => {
+        it('gives back content as-is if there is no require', () => {
             const content = ".someClass { color: #fff;}";
             expect(operator.mergeVarsToContent(content, context)).toEqual(content);
         });
@@ -191,6 +191,15 @@ describe('js-to-styles-vars-loader', () => {
           const merged = operator.mergeVarsToContent(content, {...context, context: path.resolve('./mocks/')}, 'less');
           expect(merged.trim()).toEqual(expectedContent.trim());
         })
+
+        it("imports nested props", () => {
+          const content = fs.readFileSync(path.resolve('./mocks/case2.less'), 'utf8');
+          const expectedContent = fs.readFileSync(path.resolve('./mocks/case2_expected.less'), 'utf8');
+          const merged = operator.mergeVarsToContent(content, {...context, context: path.resolve('./mocks/')}, 'less');
+          expect(merged.trim()).toEqual(expectedContent.trim());
+        })
+
+
     });
 
     describe('getResource', () => {

@@ -6,9 +6,9 @@ const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*);?/igm;
 
 const operator = {
 
-    guardExportType (data, relativePath) {
-        if (typeof data !== "object" || Array.isArray(data)) {
-            throw new Error(`Value must be an object '${relativePath}'`)
+    validateExportType (data, relativePath) {
+        if (data === null || typeof data !== "object" || Array.isArray(data)) {
+            throw new Error(`Value must be a flat object '${relativePath}'`)
         }
     },
 
@@ -18,10 +18,10 @@ const operator = {
         if (!data) {
             throw new Error(`No data in '${relativePath}'`)
         }
-        this.guardExportType(data, relativePath);
+        this.validateExportType(data, relativePath);
         if (property) {
             const propVal = squba(data, property);
-            this.guardExportType(propVal, relativePath);
+            this.validateExportType(propVal, relativePath);
             return propVal;
         }
         return data;
@@ -55,10 +55,17 @@ const operator = {
         }
     },
 
+    propDeDot (strPropMatch) {
+        if (!strPropMatch || strPropMatch[0] !== ".")
+            return strPropMatch;
+        else
+            return strPropMatch.substr(1);
+    },
+
     mergeVarsToContent (content, webpackContext, preprocessorType) {
         const replacer = function (m,q, relativePath, property) {
             const modulePath = path.join(webpackContext.context, relativePath)
-            const varData = this.getVarData(modulePath, property);
+            const varData = this.getVarData(modulePath, this.propDeDot(property));
             webpackContext.addDependency(modulePath);
             return this.transformToStyleVars({
                 type: preprocessorType,
