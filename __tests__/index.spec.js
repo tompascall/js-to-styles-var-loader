@@ -82,6 +82,11 @@ describe('js-to-styles-vars-loader', () => {
             {},
         ];
         const areNotOk = [
+            "",
+            100.1,
+            [],
+            null,
+            undefined,
             {a: 1/"bad"},
             {b: []},
             {c: ["bad"]},
