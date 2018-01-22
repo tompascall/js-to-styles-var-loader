@@ -53,8 +53,8 @@ describe('js-to-styles-vars-loader', () => {
         });
     });
 
-    describe('validateExportType', () => {
-      it ("throws on anything except an object, does not throw otherwise", () => {
+    describe('validation', () => {
+      it ("validateExportType() throws on anything except an object, does not throw otherwise", () => {
         const areOk = [{}, {a: "foo"}];
         const areNotOk = [[], ["a"], "", "123", 123, false, true, null, undefined, NaN];
         expect(() => {
@@ -69,7 +69,42 @@ describe('js-to-styles-vars-loader', () => {
             },).toThrow();
 
         }
+      })
 
+      it ("validateVariablesValue() throws on nested objects or invalid object property values", () => {
+        const areOk = [
+            {a: "foo"},
+            {a: 100.1},
+            {a: 100},
+            {a: ""},
+            {a: 0},
+            {a: 0},
+            {},
+        ];
+        const areNotOk = [
+            {a: 1/"bad"},
+            {b: []},
+            {c: ["bad"]},
+            {d: [100.1]},
+            {e: () => "bad"},
+            {f: {}},
+            {g: { b: "bad"} },
+            {h: "foo", b: {}},
+            {i: "foo", b: { c: "bad" }},
+            {j: "foo", b: { c: 100}}
+        ];
+        expect(() => {
+            for (const okThing of areOk) {
+                operator.validateVariablesValue(okThing, "");
+            }
+        }).not.toThrow();
+        for (const notOkThing of areNotOk) {
+            expect(() => {
+                operator.validateVariablesValue(notOkThing, "", "");
+                console.error(`Should have thrown on ${typeof notOkThing} '${JSON.stringify(notOkThing)}'`);
+            },).toThrow();
+
+        }
       })
     });
 
@@ -159,18 +194,13 @@ describe('js-to-styles-vars-loader', () => {
             addDependency () {}
         };
         const content = "require('./mocks/colors.js');\n" +
-            ".someClass { color: #fff;}";
-
-        const trimmer = (str) => {
-          return (str.split("\n").filter(a => a).map(s => s.trim()).join(" ")).trim()
-        };
+            ".someClass { color: #fff; }";
 
         it('inserts vars to styles content', () => {
             operator.mergeVarsToContent(content, context, 'less')
 
-            expect(trimmer(operator.mergeVarsToContent(content, context, 'less'))).toEqual(trimmer(`
-              @white: #fff; @black: #000; .someClass { color: #fff;}
-            `));
+            expect(operator.mergeVarsToContent(content, context, 'less'))
+                .toEqual("@white: #fff;\n@black: #000;\n\n.someClass { color: #fff; }");
         });
 
         it('call context.addDependecy', () => {

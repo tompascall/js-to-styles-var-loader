@@ -7,21 +7,44 @@ const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*);?/igm;
 const operator = {
 
     validateExportType (data, relativePath) {
-        if (data === null || typeof data !== "object" || Array.isArray(data)) {
-            throw new Error(`Value must be a flat object '${relativePath}'`)
+        if (Object.prototype.toString.call(data) !== '[object Object]') {
+            throw new Error(`Export must be an object '${relativePath}'`);
         }
+    },
+
+    // Ensure it is a flat object with finite number/string values.
+    validateVariablesValue(value, property, relativePath) {
+        if (Object.prototype.toString.call(value) !== '[object Object]') {
+            throw new Error(`Only an object can be converted to style vars (${relativePath}${property})`);
+        }
+
+        const keys = Object.keys(value);
+        for (const k of keys) {
+            if (!(
+                // Define ok types of value (can be output as a style var)
+                typeof value[k] === "string"
+                || (typeof value[k] === "number" && Number.isFinite(value[k]))
+            )) {
+                throw new Error(
+                    `Style vars must have a value of type "string" or "number". Only flat objects are supported. ` +
+                    `In: ${relativePath}${property ? ":" : ""}${property}`);
+            }
+        }
+
+        return true;
     },
 
     getVarData (relativePath, property) {
         decache(relativePath);
         const data = require(relativePath);
         if (!data) {
-            throw new Error(`No data in '${relativePath}'`)
+            throw new Error(`No data in '${relativePath}'`);
         }
         this.validateExportType(data, relativePath);
         if (property) {
             const propVal = squba(data, property);
             this.validateExportType(propVal, relativePath);
+            this.validateVariablesValue(propVal, property, relativePath)
             return propVal;
         }
         return data;
