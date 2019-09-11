@@ -31,11 +31,18 @@ describe('js-to-styles-vars-loader', () => {
             expect(operator.getPreprocessorType).toHaveBeenCalledWith({ resource: context._module.resource });
         });
 
+        it('calls operator.mergeVarsToContent with content and loader context, and custom preprocessor type', () => {
+            const customLessContext = {...context, options: { type: 'less', }}
+
+            spyOn(operator, 'mergeVarsToContent');
+            loader.call(customLessContext, 'asdf');
+            expect(operator.mergeVarsToContent).toHaveBeenCalledWith('asdf', customLessContext, 'less');
+        })
+
         it('calls operator.mergeVarsToContent with content and loader context, and preprocessor type', () => {
             spyOn(operator, 'mergeVarsToContent');
             loader.call(context, 'asdf');
             expect(operator.mergeVarsToContent).toHaveBeenCalledWith('asdf', context, 'sass');
-
         });
 
         it('handles .sass extension for sass files', () => {
