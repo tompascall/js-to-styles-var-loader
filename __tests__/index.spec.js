@@ -257,8 +257,27 @@ describe('js-to-styles-vars-loader', () => {
             expect(operator.getPreprocessorType({ resource: '/path/to/resource.sass'})).toEqual('sass');
         });
 
+        it('should recognise sass resource in vue inline style', () => {
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.vue?vue&type=style&index=0&id=2964abc9&scoped=true&lang=scss&'})).toEqual('sass');
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.vue?vue&type=style&index=0&id=2964abc9&scoped=true&lang=sass&'})).toEqual('sass');
+        });
+
+        it('should recognise sass resource in vue external style', () => {
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.scss?vue&type=style&index=0&id=0e4a89e8&scoped=true&lang=css&'})).toEqual('sass');
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.sass?vue&type=style&index=0&id=0e4a89e8&scoped=true&lang=css&'})).toEqual('sass');
+        });
+
         it('should recognise less resource', () => {
             expect(operator.getPreprocessorType({ resource: '/path/to/resource.less'})).toEqual('less');
+        });
+
+        
+        it('should recognise sass resource in less inline style', () => {
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.vue?vue&type=style&index=0&id=2964abc9&scoped=true&lang=less&'})).toEqual('less');
+        });
+
+        it('should recognise sass resource in less external style', () => {
+            expect(operator.getPreprocessorType({ resource: '/path/to/resource.less?vue&type=style&index=0&id=0e4a89e8&scoped=true&lang=css&'})).toEqual('less');
         });
 
         it('throw error if proprocessor type is unknown', () => {
