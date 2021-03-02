@@ -21,7 +21,7 @@ Probably you use [sass-loader](https://github.com/webpack-contrib/sass-loader) o
 For sass-loader:
 ```js
 {
-  rules: [
+  rules: [{
     test: /\.scss$/,
     use: [
       {
@@ -37,7 +37,7 @@ For sass-loader:
         loader: "js-to-styles-var-loader"
       }
     ]
-  ]
+  }]
 }
 ```
 
@@ -45,7 +45,7 @@ For less-loader:
 
 ```js
 {
-  rules: [
+  rules: [{
     test: /\.less$/,
     use: [
       {
@@ -61,9 +61,28 @@ For less-loader:
         loader: "js-to-styles-var-loader"
       }
     ]
-  ]
+  }]
 }
 ```
+
+Specify type:
+```js
+{
+  rules: [{
+    test: /\.less$/,
+    use: [
+      "less-loader",
+      {
+        loader : "js-to-styles-var-loader",
+        options: {
+          type: "less"
+        }
+      }
+    ]
+  }]
+}
+```
+
 #### Usage
 
 Let's assume we would like to store some variable data in a module like this:

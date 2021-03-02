@@ -1,6 +1,7 @@
 const path = require('path');
 const decache = require('decache');
 const squba = require('squba')
+const getOptions = require('loader-utils').getOptions
 
 const requireReg = /require\s*\((["'])([\w.\/]+)(?:\1)\)((?:\.[\w_-]+)*);?/igm;
 
@@ -127,8 +128,16 @@ exports.operator = operator;
 
 const loader = function (content) {
     const webpackContext = this;
-    const resource = operator.getResource(webpackContext);
-    const preprocessorType = operator.getPreprocessorType({ resource });
+    // const options = getOptions(this);
+    let preprocessorType
+
+    if(this.options && this.options.type) {
+        preprocessorType = this.options.type
+    } else {
+        const resource = operator.getResource(webpackContext);
+        preprocessorType = operator.getPreprocessorType({ resource });
+    }
+
     const merged = operator.mergeVarsToContent(content, webpackContext, preprocessorType);
     return merged;
 };

@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --config jest.config",
+    "test:debug": "node --inspect-brk node_modules/.bin/jest --runInBand --config jest.config",
     "test:coverage": "jest --config jest.config --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "test:watch": "jest --watch --config jest.config"
   },
